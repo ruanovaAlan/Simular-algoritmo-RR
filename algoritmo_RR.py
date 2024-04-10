@@ -24,7 +24,9 @@ noLotesPendientes_label = ttk.Label(enEsperaFrame, text="# De procesos pendiente
 
 #contenido del frame "en ejecución"
 ejecucion_label = ttk.Label(ejecucionFrame, text="EN EJECUCIÓN") #Proceso en ejecución
-ejecucion_text = Text(ejecucionFrame, width=20, height=10)
+ejecucion_text = Text(ejecucionFrame, width=20, height=5)
+bloqueado_label = ttk.Label(ejecucionFrame, text="BLOQUEADO") 
+bloqueado_text = Text(ejecucionFrame, width=20, height=7)
 #----------------------------------
 
 #contenido del frame "terminados"
@@ -62,11 +64,13 @@ noLotesPendientes_label.grid(column=0, row=3, columnspan=2, pady=10)
 #en ejecución
 ejecucion_label.grid(column=0, row=0, columnspan=2, pady=10)
 ejecucion_text.grid(column=0, row=1, columnspan=2)
+bloqueado_label.grid(column=0, row=2, columnspan=2, pady=10)
+bloqueado_text.grid(column=0, row=3, columnspan=2)
 
-interrumpirBtn.grid(column=0, row=2, pady=30)
-errorBtn.grid(column=1, row=2, pady=30)
-pausaBtn.grid(column=0, row=3, pady=10)
-continuarBtn.grid(column=1, row=3, pady=10)
+interrumpirBtn.grid(column=0, row=4, pady=10)
+errorBtn.grid(column=1, row=4, pady=10)
+pausaBtn.grid(column=0, row=5)
+continuarBtn.grid(column=1, row=5)
 #------------------
 
 #terminados
