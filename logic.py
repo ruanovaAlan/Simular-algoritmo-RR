@@ -249,8 +249,9 @@ def ejecutar_proceso(lotes, noLotesPendientes_label, ejecucion_text, root, proce
         cantidad_procesos = sum(len(lote) for lote in lotes) - len(lotes[0]) if lotes else 0  # Suma de la cantidad de procesos en todos los lotes
         # Actualiza el número de lotes pendientes
         noLotesPendientes_label.config(text=f"# De procesos pendientes: {cantidad_procesos}")
-        # Llama a la función de nuevo después de 1 segundo
-        root.after(1000, ejecutar_proceso, lotes, noLotesPendientes_label, ejecucion_text, root, procesosEnEspera_text, terminados_text, obtenerResultadosBtn, procesos_terminados, tiempo_inicio_proceso)
+    
+    # Llama a la función de nuevo después de 1 segundo
+    root.after(1000, ejecutar_proceso, lotes, noLotesPendientes_label, ejecucion_text, root, procesosEnEspera_text, terminados_text, obtenerResultadosBtn, procesos_terminados, tiempo_inicio_proceso)
 
 #Funcion para generar procesos y ejecutarlos
 def generar_procesos(noProcesos_entry, ejecucion_text, noLotesPendientes_label, root, procesosEnEspera_text, terminados_text, obtenerResultadosBtn, relojGlobal_label):
@@ -289,9 +290,8 @@ def pausar_programa():
     global program_running
     program_running = False
 
-# # Función para continuar el programa
-# def continuar_programa():
-#     global program_running, lotes
-#     program_running = True
-#     ejecutar_proceso(lotes, noLotesPendientes_label, ejecucion_text, root, procesosEnEspera_text, terminados_text, obtenerResultadosBtn)
+# Función para continuar el programa
+def continuar_programa():
+    global program_running, lotes
+    program_running = True
 
