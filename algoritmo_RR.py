@@ -1,6 +1,6 @@
 from tkinter import *
 from tkinter import ttk
-from logic import update_clock, generar_procesos, resultados_a_txt, interrumpir_proceso, terminar_proceso
+from logic import update_clock, generar_procesos, resultados_a_txt, interrumpir_proceso, terminar_proceso, pausar_programa, continuar_programa
 
 root = Tk()
 
@@ -40,7 +40,8 @@ generarBtn = ttk.Button(enEsperaFrame, command=lambda: generar_procesos(noProces
 obtenerResultadosBtn = ttk.Button(terminadosFrame, state='disabled', command=resultados_a_txt, text="OBTENER RESULTADOS")
 interrumpirBtn = ttk.Button(ejecucionFrame, text="INTERRUMPIR", command=interrumpir_proceso)
 errorBtn = ttk.Button(ejecucionFrame, text="ERROR", command=terminar_proceso)
-
+pausaBtn = ttk.Button(ejecucionFrame, text="PAUSA", command=pausar_programa)
+continuarBtn = ttk.Button(ejecucionFrame, text="CONTINUAR", command=continuar_programa)
 #--- Grid Layout ---
 content.grid(column=0, row=0)
 enEsperaFrame.grid(column=0, row=0, columnspan=2)
@@ -64,6 +65,8 @@ ejecucion_text.grid(column=0, row=1, columnspan=2)
 
 interrumpirBtn.grid(column=0, row=2, pady=30)
 errorBtn.grid(column=1, row=2, pady=30)
+pausaBtn.grid(column=0, row=3, pady=10)
+continuarBtn.grid(column=1, row=3, pady=10)
 #------------------
 
 #terminados

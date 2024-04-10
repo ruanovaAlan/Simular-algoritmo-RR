@@ -1,3 +1,6 @@
+""" El algoritmo a implementar para la cola de listos es el 
+Round Robin con un quantum de 5 """
+
 import time
 import random
 import copy
@@ -13,6 +16,7 @@ num_lote = 1 #Variable para el número de lote para los procesos terminados
 end_lote = False #Variable para validar si el lote actual termino
 cont_procesos = 0 #Variable para contar los procesos terminados
 tiempo_en_espera = 0 #Variable para el tiempo en espera
+program_running = True #Variable para validar si el programa esta corriendo
 
 
 
@@ -236,7 +240,7 @@ def terminados(lotes, terminados_text, procesos_terminados, tiempo_restante, tie
 
 
 def ejecutar_proceso(lotes, noLotesPendientes_label, ejecucion_text, root, procesosEnEspera_text, terminados_text, obtenerResultadosBtn, procesos_terminados=[], tiempo_inicio_proceso=None):
-    if lotes:  
+    if program_running and lotes:  
         #Funcion para mostrar el proceso en ejecución
         tiempo_restante, tiempo_inicio_proceso = en_ejecucion(lotes, ejecucion_text, tiempo_inicio_proceso)
         en_espera(lotes, procesosEnEspera_text) #Funcion para mostrar los procesos en espera
@@ -280,4 +284,14 @@ def terminar_proceso():
             proceso['operacion'] += ' = ERROR'  # Asigna ERROR a la operación
             tiempo_transcurrido_proceso = 0  # Resetea el tiempo transcurrido
 
+# Función para pausar el programa
+def pausar_programa():
+    global program_running
+    program_running = False
+
+# # Función para continuar el programa
+# def continuar_programa():
+#     global program_running, lotes
+#     program_running = True
+#     ejecutar_proceso(lotes, noLotesPendientes_label, ejecucion_text, root, procesosEnEspera_text, terminados_text, obtenerResultadosBtn)
 
