@@ -17,19 +17,20 @@ end_lote = False #Variable para validar si el lote actual termino
 cont_procesos = 0 #Variable para contar los procesos terminados
 tiempo_en_espera = 0 #Variable para el tiempo en espera
 program_running = True #Variable para validar si el programa esta corriendo
+pause_time = None #Variable para el tiempo de pausa
 
 
 
 
 #Función que actualiza el reloj
 def update_clock(relojGlobal_label, root): 
-    global start_time
+    global start_time, program_running
     if start_time is None:
         start_time = time.time()
     if clock_running:
         elapsed_time = time.time() - start_time
         relojGlobal_label.config(text=f"Reloj: {int(elapsed_time)} segundos")
-        root.after(1000, update_clock, relojGlobal_label, root)  # Actualiza el reloj cada 1000 milisegundos
+    root.after(1000, update_clock, relojGlobal_label, root)  # Actualiza el reloj cada 1000 milisegundos
 
 #Funcion para detener el reloj
 def stop_clock():
@@ -287,11 +288,17 @@ def terminar_proceso():
 
 # Función para pausar el programa
 def pausar_programa():
-    global program_running
+    global program_running, clock_running, pause_time
     program_running = False
+    clock_running = False
+    pause_time = time.time()  # Registra el momento en que se pausa el reloj
 
-# Función para continuar el programa
 def continuar_programa():
-    global program_running, lotes
+    global program_running, clock_running, start_time, pause_time
     program_running = True
+    clock_running = True
+    if pause_time is not None:
+        start_time += time.time() - pause_time  # Ajusta start_time por la cantidad de tiempo que el reloj estuvo en pausa
+        pause_time = None
+
 
