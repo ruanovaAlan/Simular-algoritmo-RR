@@ -180,7 +180,7 @@ def en_ejecucion(lotes, ejecucion_text, tiempo_inicio_proceso):
         
     tiempo_transcurrido_proceso += 1
     if tiempo_transcurrido_proceso == 5:
-        interrumpir_proceso()
+        interrumpir_por_rr_q5()
     tiempo_transcurrido = tiempo_transcurrido_proceso
     
     procesoEnEjecucion['tiempo_servicio'] += 1  # Asigna el tiempo de servicio
@@ -195,7 +195,7 @@ def en_ejecucion(lotes, ejecucion_text, tiempo_inicio_proceso):
     ejecucion_text.delete('1.0', END) 
     
     if lote_actual: #Muestra el proceso en ejecución
-        if procesoEnEjecucion['bloqueado']:
+        if procesoEnEjecucion['interrumpido']:
             ejecucion_text.insert(END, f"{procesoEnEjecucion['numero_programa']}. {procesoEnEjecucion['nombre']}\n{procesoEnEjecucion['operacion']}\nTiempo ejecutado:{procesoEnEjecucion['tiempo_maximo'] - procesoEnEjecucion['tiempo_restante']}\nTME: {round(tiempo_restante) if tiempo_restante > 0 else 0}")
         else:
             ejecucion_text.insert(END, f"{procesoEnEjecucion['numero_programa']}. {procesoEnEjecucion['nombre']}\n{procesoEnEjecucion['operacion']}\nTME: {round(tiempo_restante) if tiempo_restante > 0 else 0}")
@@ -274,7 +274,7 @@ def interrumpir_proceso():
         if lote_actual and end_lote == False:  # Si hay procesos en el lote
             proceso = lote_actual.pop(0)  # Toma y elimina el primer proceso
             proceso['tiempo_restante'] -= tiempo_transcurrido_proceso  # Actualiza el tiempo restante
-            proceso['interrumpido'] = True  # Marca el proceso como interrumpido
+            proceso['bloqueado'] = True  # Marca el proceso como bloqueado
             lote_actual.append(proceso)  # Mueve el proceso al final de la cola de espera
             tiempo_transcurrido_proceso = 0  # Resetea el tiempo transcurrido
 
@@ -304,4 +304,13 @@ def continuar_programa():
         start_time += time.time() - pause_time  # Ajusta start_time por la cantidad de tiempo que el reloj estuvo en pausa
         pause_time = None
 
-
+def interrumpir_por_rr_q5():
+    global tiempo_transcurrido_proceso, end_lote
+    if lotes:  # Si hay lotes
+        lote_actual = lotes[0]  # Toma el primer lote
+        if lote_actual and end_lote == False:  # Si hay procesos en el lote
+            proceso = lote_actual.pop(0)  # Toma y elimina el primer proceso
+            proceso['tiempo_restante'] -= tiempo_transcurrido_proceso  # Actualiza el tiempo restante
+            proceso['interrumpido'] = True  # Marca el proceso como interrumpido
+            lote_actual.append(proceso)  # Mueve el proceso al final de la cola de espera
+            tiempo_transcurrido_proceso = 0  # Resetea el tiempo transcurrido
