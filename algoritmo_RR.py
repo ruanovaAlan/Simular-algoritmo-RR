@@ -38,7 +38,7 @@ terminados_text = Text(terminadosFrame, width=20, height=20)
 
 #----- Botones ----- 
 #Generar procesos y obtener resultados
-generarBtn = ttk.Button(enEsperaFrame, command=lambda: generar_procesos(noProcesos_entry, ejecucion_text, noLotesPendientes_label, root, procesosEnEspera_text, terminados_text, obtenerResultadosBtn, relojGlobal_label), text="Generar")
+generarBtn = ttk.Button(enEsperaFrame, command=lambda: generar_procesos(noProcesos_entry, ejecucion_text, noLotesPendientes_label, root, procesosEnEspera_text, terminados_text, obtenerResultadosBtn, relojGlobal_label, bloqueado_text), text="Generar")
 obtenerResultadosBtn = ttk.Button(terminadosFrame, state='disabled', command=resultados_a_txt, text="OBTENER RESULTADOS")
 interrumpirBtn = ttk.Button(ejecucionFrame, text="INTERRUMPIR", command=interrumpir_proceso)
 errorBtn = ttk.Button(ejecucionFrame, text="ERROR", command=terminar_proceso)

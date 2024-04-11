@@ -18,6 +18,7 @@ cont_procesos = 0 #Variable para contar los procesos terminados
 tiempo_en_espera = 0 #Variable para el tiempo en espera
 program_running = True #Variable para validar si el programa esta corriendo
 pause_time = None #Variable para el tiempo de pausa
+procesos_bloqueados = [] #Array de procesos bloqueados
 
 
 
@@ -77,8 +78,9 @@ def crear_lotes(n):
             'tiempo_espera': 0, #Tiempo que el proceso ha estado esperando para usar el procesador.
             'tiempo_servicio': 0, #Tiempo que el proceso ha estado dentro del procesador.
             'tiempo_respuesta': 0, # Tiempo transcurrido desde que llega hasta que es atendido por primera vez.
-            'tiempo_bloqueado': 5, #Tiempo que el proceso estara bloqueado
-            'bloqueado': False #Variable para validar si el proceso esta bloqueado
+            'tiempo_bloqueado': 3, #Tiempo que el proceso estara bloqueado
+            'bloqueado': False, #Variable para validar si el proceso esta bloqueado
+            'ha_sido_bloqueado': False #Variable para validar si el proceso ha sido bloqueado
         }
         
         lote.append(proceso)
@@ -157,15 +159,15 @@ def en_espera(lotes, procesosEnEspera_text):
             
     procesosEnEspera_text.delete('1.0', END)  
     for proceso in lote_actual[1:]:
-        if proceso['interrumpido']:  #Si el proceso fue interrumpido
+        if proceso['interrumpido'] or proceso['ha_sido_bloqueado']:  #Si el proceso fue interrumpido
             procesosEnEspera_text.insert(END, f"{proceso['numero_programa']}. {proceso['nombre']}\n{proceso['operacion']}\nTME: {proceso['tiempo_maximo']}\nTiempo restante: {round(proceso['tiempo_restante'])}\n\n")
         else:
             procesosEnEspera_text.insert(END, f"{proceso['numero_programa']}. {proceso['nombre']}\n{proceso['operacion']}\nTME: {proceso['tiempo_maximo']}\n\n")
         
         proceso['tiempo_espera'] = tiempo_en_espera - proceso['tiempo_llegada'] # Asigna el tiempo de espera
 
-def en_ejecucion(lotes, ejecucion_text, tiempo_inicio_proceso):
-    global tiempo_transcurrido_proceso
+def en_ejecucion(lotes, ejecucion_text, bloqueado_text, tiempo_inicio_proceso):
+    global tiempo_transcurrido_proceso, procesos_bloqueados 
     
     lote_actual = lotes[0]  # Toma el primer lote
     procesoEnEjecucion = lote_actual[0]  # Toma el primer proceso en espera
@@ -174,20 +176,21 @@ def en_ejecucion(lotes, ejecucion_text, tiempo_inicio_proceso):
         tiempo_inicio_proceso = time.time() - start_time
         tiempo_transcurrido_proceso = 0
     
-    if procesoEnEjecucion['tiempo_inicio'] is None and procesoEnEjecucion['interrumpido'] == False:
+    if procesoEnEjecucion['tiempo_inicio'] is None and procesoEnEjecucion['interrumpido'] == False or procesoEnEjecucion['ha_sido_bloqueado'] == False:
         procesoEnEjecucion['tiempo_inicio'] = round(time.time() - start_time)
         procesoEnEjecucion['tiempo_respuesta'] = procesoEnEjecucion['tiempo_inicio']  # Asigna el tiempo de respuesta (tiempo transcurrido desde que llega hasta que es atendido por primera vez
         
     tiempo_transcurrido_proceso += 1
     if tiempo_transcurrido_proceso == 5:
         interrumpir_por_rr_q5()
+        
     tiempo_transcurrido = tiempo_transcurrido_proceso
     
     procesoEnEjecucion['tiempo_servicio'] += 1  # Asigna el tiempo de servicio
     
     if procesoEnEjecucion['error']:  # If the process has an error
         tiempo_restante = 0
-    elif procesoEnEjecucion['interrumpido']:  # If the process was interrupted
+    elif procesoEnEjecucion['interrumpido'] or procesoEnEjecucion['ha_sido_bloqueado']:  # If the process was interrupted
         tiempo_restante = procesoEnEjecucion['tiempo_restante'] - tiempo_transcurrido
     else:
         tiempo_restante = procesoEnEjecucion['tiempo_maximo'] - tiempo_transcurrido
@@ -195,10 +198,12 @@ def en_ejecucion(lotes, ejecucion_text, tiempo_inicio_proceso):
     ejecucion_text.delete('1.0', END) 
     
     if lote_actual: #Muestra el proceso en ejecución
-        if procesoEnEjecucion['interrumpido']:
+        if procesoEnEjecucion['interrumpido'] or procesoEnEjecucion['ha_sido_bloqueado']:
             ejecucion_text.insert(END, f"{procesoEnEjecucion['numero_programa']}. {procesoEnEjecucion['nombre']}\n{procesoEnEjecucion['operacion']}\nTiempo ejecutado:{procesoEnEjecucion['tiempo_maximo'] - procesoEnEjecucion['tiempo_restante']}\nTME: {round(tiempo_restante) if tiempo_restante > 0 else 0}")
         else:
             ejecucion_text.insert(END, f"{procesoEnEjecucion['numero_programa']}. {procesoEnEjecucion['nombre']}\n{procesoEnEjecucion['operacion']}\nTME: {round(tiempo_restante) if tiempo_restante > 0 else 0}")
+            if procesos_bloqueados:
+                gestionar_procesos_bloqueados(bloqueado_text)
     return tiempo_restante, tiempo_inicio_proceso
 
 
@@ -243,10 +248,10 @@ def terminados(lotes, terminados_text, procesos_terminados, tiempo_restante, tie
     return tiempo_inicio_proceso
 
 
-def ejecutar_proceso(lotes, noLotesPendientes_label, ejecucion_text, root, procesosEnEspera_text, terminados_text, obtenerResultadosBtn, procesos_terminados=[], tiempo_inicio_proceso=None):
+def ejecutar_proceso(lotes, noLotesPendientes_label, ejecucion_text, root, procesosEnEspera_text, terminados_text, obtenerResultadosBtn, bloqueado_text, procesos_terminados=[], tiempo_inicio_proceso=None):
     if program_running and lotes:  
         #Funcion para mostrar el proceso en ejecución
-        tiempo_restante, tiempo_inicio_proceso = en_ejecucion(lotes, ejecucion_text, tiempo_inicio_proceso)
+        tiempo_restante, tiempo_inicio_proceso = en_ejecucion(lotes, ejecucion_text, bloqueado_text, tiempo_inicio_proceso)
         en_espera(lotes, procesosEnEspera_text) #Funcion para mostrar los procesos en espera
         #Funcion para mostrar los procesos terminados
         tiempo_inicio_proceso = terminados(lotes, terminados_text, procesos_terminados, tiempo_restante, tiempo_inicio_proceso, ejecucion_text, obtenerResultadosBtn)
@@ -255,28 +260,51 @@ def ejecutar_proceso(lotes, noLotesPendientes_label, ejecucion_text, root, proce
         noLotesPendientes_label.config(text=f"# De procesos pendientes: {cantidad_procesos}")
     
     # Llama a la función de nuevo después de 1 segundo
-    root.after(1000, ejecutar_proceso, lotes, noLotesPendientes_label, ejecucion_text, root, procesosEnEspera_text, terminados_text, obtenerResultadosBtn, procesos_terminados, tiempo_inicio_proceso)
+    root.after(1000, ejecutar_proceso, lotes, noLotesPendientes_label, ejecucion_text, root, procesosEnEspera_text, terminados_text, obtenerResultadosBtn, bloqueado_text, procesos_terminados, tiempo_inicio_proceso)
 
 #Funcion para generar procesos y ejecutarlos
-def generar_procesos(noProcesos_entry, ejecucion_text, noLotesPendientes_label, root, procesosEnEspera_text, terminados_text, obtenerResultadosBtn, relojGlobal_label):
+def generar_procesos(noProcesos_entry, ejecucion_text, noLotesPendientes_label, root, procesosEnEspera_text, terminados_text, obtenerResultadosBtn, relojGlobal_label, bloqueado_text):
     global lotes
     n = int(noProcesos_entry.get())
     crear_lotes(n)
     lotes_a_txt()
     update_clock(relojGlobal_label, root)  # Inicia el reloj 
-    ejecutar_proceso(lotes, noLotesPendientes_label, ejecucion_text, root, procesosEnEspera_text, terminados_text, obtenerResultadosBtn)  # Inicia el "bucle"
+    ejecutar_proceso(lotes, noLotesPendientes_label, ejecucion_text, root, procesosEnEspera_text, terminados_text, obtenerResultadosBtn, bloqueado_text)  # Inicia el "bucle"
 
 # Función para interrumpir el proceso actual
 def interrumpir_proceso():
-    global tiempo_transcurrido_proceso, end_lote
+    global tiempo_transcurrido_proceso, end_lote, procesos_bloqueados 
     if lotes:  # Si hay lotes
         lote_actual = lotes[0]  # Toma el primer lote
         if lote_actual and end_lote == False:  # Si hay procesos en el lote
             proceso = lote_actual.pop(0)  # Toma y elimina el primer proceso
             proceso['tiempo_restante'] -= tiempo_transcurrido_proceso  # Actualiza el tiempo restante
             proceso['bloqueado'] = True  # Marca el proceso como bloqueado
-            lote_actual.append(proceso)  # Mueve el proceso al final de la cola de espera
+            proceso['ha_sido_bloqueado'] = True  # Marca el proceso como que por lo menos ha sido bloqueado 1 vez
+            procesos_bloqueados.append(proceso)  # Mueve el proceso a la lista de procesos bloqueados
             tiempo_transcurrido_proceso = 0  # Resetea el tiempo transcurrido
+
+# Función para gestionar los procesos bloqueados
+def gestionar_procesos_bloqueados(bloqueado_text):
+    global procesos_bloqueados, lotes
+    procesos_a_reintegrar = []  # Lista para almacenar los procesos que deben reintegrarse al lote actual
+
+    for proceso in list(procesos_bloqueados):  # Itera sobre una copia de la lista
+        proceso['tiempo_bloqueado'] -= 1  # Decrementa el tiempo de bloqueo
+        if proceso['tiempo_bloqueado'] <= 0:  # Si el tiempo de bloqueo ha terminado
+            proceso['bloqueado'] = False  # Marca el proceso como no bloqueado
+            proceso['tiempo_bloqueado'] = 3  # Restablece el tiempo de bloqueo predeterminado
+            procesos_a_reintegrar.append(proceso)  # Agrega el proceso a la lista de procesos a reintegrar
+            procesos_bloqueados.remove(proceso)  # Elimina el proceso de la lista de procesos bloqueados
+            
+    # Reintegra los procesos bloqueados al lote actual
+    for proceso in procesos_a_reintegrar:
+        lotes[0].append(proceso)  # Agrega los procesos a reintegrar al final del lote actual
+        
+    # Actualiza el widget bloqueado_text para reflejar los cambios
+    bloqueado_text.delete('1.0', END)
+    for proceso in procesos_bloqueados:
+        bloqueado_text.insert(END, f"{proceso['numero_programa']}. {proceso['nombre']}\n{proceso['operacion']}\nTB: {round(proceso['tiempo_bloqueado'])}\n")
 
 # Función para terminar el proceso actual
 def terminar_proceso():
