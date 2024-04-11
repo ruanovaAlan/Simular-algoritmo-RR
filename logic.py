@@ -76,8 +76,9 @@ def crear_lotes(n):
             'tiempo_retorno': 0, #Tiempo total desde que el proceso llega hasta que termina.
             'tiempo_espera': 0, #Tiempo que el proceso ha estado esperando para usar el procesador.
             'tiempo_servicio': 0, #Tiempo que el proceso ha estado dentro del procesador.
-            'tiempo_respuesta': 0 # Tiempo transcurrido desde que llega hasta que es atendido por primera vez.
-            
+            'tiempo_respuesta': 0, # Tiempo transcurrido desde que llega hasta que es atendido por primera vez.
+            'tiempo_bloqueado': 5, #Tiempo que el proceso estara bloqueado
+            'bloqueado': False #Variable para validar si el proceso esta bloqueado
         }
         
         lote.append(proceso)
@@ -178,6 +179,8 @@ def en_ejecucion(lotes, ejecucion_text, tiempo_inicio_proceso):
         procesoEnEjecucion['tiempo_respuesta'] = procesoEnEjecucion['tiempo_inicio']  # Asigna el tiempo de respuesta (tiempo transcurrido desde que llega hasta que es atendido por primera vez
         
     tiempo_transcurrido_proceso += 1
+    if tiempo_transcurrido_proceso == 5:
+        interrumpir_proceso()
     tiempo_transcurrido = tiempo_transcurrido_proceso
     
     procesoEnEjecucion['tiempo_servicio'] += 1  # Asigna el tiempo de servicio
@@ -192,7 +195,7 @@ def en_ejecucion(lotes, ejecucion_text, tiempo_inicio_proceso):
     ejecucion_text.delete('1.0', END) 
     
     if lote_actual: #Muestra el proceso en ejecución
-        if procesoEnEjecucion['interrumpido']:
+        if procesoEnEjecucion['bloqueado']:
             ejecucion_text.insert(END, f"{procesoEnEjecucion['numero_programa']}. {procesoEnEjecucion['nombre']}\n{procesoEnEjecucion['operacion']}\nTiempo ejecutado:{procesoEnEjecucion['tiempo_maximo'] - procesoEnEjecucion['tiempo_restante']}\nTME: {round(tiempo_restante) if tiempo_restante > 0 else 0}")
         else:
             ejecucion_text.insert(END, f"{procesoEnEjecucion['numero_programa']}. {procesoEnEjecucion['nombre']}\n{procesoEnEjecucion['operacion']}\nTME: {round(tiempo_restante) if tiempo_restante > 0 else 0}")
