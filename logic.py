@@ -149,7 +149,7 @@ def en_espera(lote, procesosEnEspera_text):
         else:
             procesosEnEspera_text.insert(END, f"{proceso['numero_programa']}. {proceso['nombre']}\n{proceso['operacion']}\nTME: {proceso['tiempo_maximo']}\n\n")
         
-        proceso['tiempo_espera'] = tiempo_en_espera - proceso['tiempo_llegada'] # Asigna el tiempo de espera
+        proceso['tiempo_espera'] += 1 # Asigna el tiempo de espera
 
 
 def en_ejecucion(lote, ejecucion_text, bloqueado_text, tiempo_inicio_proceso):
