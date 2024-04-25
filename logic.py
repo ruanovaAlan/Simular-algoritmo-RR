@@ -188,8 +188,10 @@ def en_ejecucion(lote, ejecucion_text, bloqueado_text, tiempo_inicio_proceso):
             ejecucion_text.insert(END, f"{procesoEnEjecucion['numero_programa']}. {procesoEnEjecucion['nombre']}\n{procesoEnEjecucion['operacion']}\nTiempo ejecutado:{procesoEnEjecucion['tiempo_maximo'] - procesoEnEjecucion['tiempo_restante']}\nTME: {round(tiempo_restante) if tiempo_restante > 0 else 0}")
         else:
             ejecucion_text.insert(END, f"{procesoEnEjecucion['numero_programa']}. {procesoEnEjecucion['nombre']}\n{procesoEnEjecucion['operacion']}\nTME: {round(tiempo_restante) if tiempo_restante > 0 else 0}")
-            if procesos_bloqueados:
-                gestionar_procesos_bloqueados(bloqueado_text)
+        
+        if procesos_bloqueados:
+            gestionar_procesos_bloqueados(bloqueado_text)
+            
     return tiempo_restante, tiempo_inicio_proceso
 
 
